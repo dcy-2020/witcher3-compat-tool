@@ -1,6 +1,8 @@
 name: release
 on:
-  create:
+  push:
+    branches: ['release/**']
+    tags: ['v*']
   workflow_dispatch:
 permissions:
   contents: read
@@ -34,7 +36,10 @@ jobs:
             echo "Release reference must match the package version."
             exit 1
           fi
-          existing_tag="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha' 2>/dev/null || true)"
+          existing_tag=""
+          if fetched_tag="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha' 2>/dev/null)"; then
+            existing_tag="$fetched_tag"
+          fi
           if [[ -n "$existing_tag" && "$existing_tag" != "$GITHUB_SHA" ]]; then
             echo "Existing tag differs from this commit; preserve it."
             exit 1

@@ -12,6 +12,6 @@ Format/package adapters need exact format evidence and roundtrip tests before be
 
 The release workflow reuses the Windows/Linux x Python 3.10/3.12 test matrix before building the allowlisted source ZIP, Python zipapp and checksum file. Only its publish job receives the repository-scoped, temporary Actions token with contents-write access.
 
-After the reviewed commit is on the default branch, create a matching release branch such as release/v0.1.0. Creating a matching lightweight tag also triggers the workflow; a manual run must select the version-matching release branch or tag. The package version and reference must agree. Existing releases or conflicting tags are preserved and cause the job to stop. Annotated tag references are conservatively refused by the existing-tag guard.
+After the reviewed commit is on the default branch, push a matching release branch such as release/v0.1.0, or push a matching lightweight tag. A manual run must select the version-matching release branch or tag. The package version and reference must agree. Existing releases or conflicting tags are preserved and cause the job to stop. Annotated tag references are conservatively refused by the existing-tag guard.
 
 Releases are marked experimental prereleases. Do not add game/mod samples, scan outputs, user settings or repair histories to the build allowlist. Packaging does not validate gameplay compatibility.
