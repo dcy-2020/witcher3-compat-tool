@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+out/
+*.w3strings
+*.bundle
+*.sav
+*.png
+*.dmp
+*.ws
+*.settings
+.env*
