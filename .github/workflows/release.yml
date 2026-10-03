@@ -1,0 +1,54 @@
+name: release
+on:
+  create:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  checks:
+    if: startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/tests.yml
+  publish:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - run: python scripts/build_release.py --out dist/release
+      - name: Publish experimental release and three allowlisted assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="v$(python -c 'from w3compat import __version__; print(__version__)')"
+          if [[ "$GITHUB_REF" != "refs/heads/release/$tag" && "$GITHUB_REF" != "refs/tags/$tag" ]]; then
+            echo "Release reference must match the package version."
+            exit 1
+          fi
+          existing_tag="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.sha' 2>/dev/null || true)"
+          if [[ -n "$existing_tag" && "$existing_tag" != "$GITHUB_SHA" ]]; then
+            echo "Existing tag differs from this commit; preserve it."
+            exit 1
+          fi
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release already exists; preserve it."
+            exit 1
+          fi
+          gh release create "$tag" \
+            "dist/release/witcher3-compat-tool-${tag#v}.zip" \
+            "dist/release/witcher3-compat-tool-${tag#v}.pyz" \
+            "dist/release/SHA256SUMS.txt" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$tag - Experimental compatibility scanner" \
+            --notes-file CHANGELOG.md \
+            --prerelease

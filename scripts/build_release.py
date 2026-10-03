@@ -12,7 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def source_files():
     fixed = [".gitignore", "pyproject.toml", "LICENSE", "README.md", "README.en.md",
-             "CHANGELOG.md", "CONTRIBUTING.md", ".github/workflows/tests.yml", "scripts/build_release.py"]
+             "CHANGELOG.md", "CONTRIBUTING.md", ".github/workflows/tests.yml",
+             ".github/workflows/release.yml", "scripts/build_release.py"]
     paths = [ROOT / name for name in fixed]
     paths += sorted((ROOT / "w3compat").glob("*.py"))
     paths += sorted((ROOT / "tests").glob("test_*.py"))
